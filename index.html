@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISO 45001 PDCA Interactive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --iso-teal: #008B8B;
+            --plan-blue: #4A90E2;
+            --do-orange: #F5A623;
+            --check-orange: #FF6B35;
+            --act-pink: #D81B60;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        /* Left Side - PDCA Visual */
+        .pdca-visual {
+            flex: 1;
+            position: relative;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .iso-document {
+            display: none;
+        }
+
+        /* Background Diamond - Context */
+        .background-diamond {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            width: 307px;
+            height: 307px;
+            background: var(--iso-teal);
+            box-shadow: 0 10px 40px rgba(0, 139, 139, 0.3);
+            transition: all 0.4s ease;
+            z-index: 1;
+            margin-top: 0;
+        }
+
+        .background-diamond.highlighted {
+            transform: translate(-50%, -50%) rotate(45deg) scale(1.1);
+            box-shadow: 0 20px 60px rgba(0, 139, 139, 0.5);
+        }
+
+        .background-diamond.dimmed {
+            opacity: 0.3;
+            filter: blur(3px);
+        }
+
+        /* PDCA Circle */
+        .pdca-circle {
+            position: relative;
+            width: 355px;
+            height: 355px;
+            margin-top: 0;
+        }
+
+        .pdca-box {
+            position: absolute;
+            width: 167px;
+            height: 167px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: white;
+            border-radius: 21px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .pdca-box:hover {
+            transform: scale(1.05);
+        }
+
+        .pdca-box.highlighted {
+            transform: scale(1.25);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            z-index: 30;
+        }
+
+        .pdca-box.dimmed {
+            opacity: 0.3;
+            filter: blur(2px);
+            transform: scale(0.95);
+        }
+
+        .plan-box {
+            top: 0;
+            left: 0;
+            background: var(--plan-blue);
+            border-top-left-radius: 120px;
+        }
+
+        .do-box {
+            top: 0;
+            right: 0;
+            background: var(--do-orange);
+            border-top-right-radius: 120px;
+        }
+
+        .act-box {
+            bottom: 0;
+            left: 0;
+            background: var(--act-pink);
+            border-bottom-left-radius: 120px;
+        }
+
+        .check-box {
+            bottom: 0;
+            right: 0;
+            background: var(--check-orange);
+            border-bottom-right-radius: 120px;
+        }
+
+        /* Connecting Arrows - Hidden */
+        .arrow {
+            display: none;
+        }
+
+        /* Right Side - Category Boxes */
+        .categories-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 500px;
+        }
+
+        .category-box {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid;
+            position: relative;
+            min-height: 60px;
+        }
+
+        .category-box:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .category-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .category-subtitle {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            line-height: 1.3;
+            margin-bottom: 6px;
+        }
+
+        .category-details {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            margin-top: 0;
+        }
+
+        .category-box:hover .category-details {
+            max-height: 350px;
+            opacity: 1;
+            margin-top: 12px;
+        }
+
+        .category-details ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .category-details li {
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+            color: #34495e;
+            line-height: 1.5;
+            font-size: 0.85rem;
+        }
+
+        .category-details li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 14px;
+            width: 5px;
+            height: 5px;
+            background: currentColor;
+            border-radius: 50%;
+        }
+
+        .category-details .sub-item {
+            padding-left: 36px;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .category-details .sub-item::before {
+            width: 4px;
+            height: 4px;
+            left: 20px;
+        }
+
+        .category-box[data-category="context"],
+        .category-box[data-category="leadership"] {
+            border-left-color: var(--iso-teal);
+        }
+
+        .category-box[data-category="planning"] {
+            border-left-color: var(--plan-blue);
+        }
+
+        .category-box[data-category="support"],
+        .category-box[data-category="operation"] {
+            border-left-color: var(--do-orange);
+        }
+
+        .category-box[data-category="performance"] {
+            border-left-color: var(--check-orange);
+        }
+
+        .category-box[data-category="improvement"] {
+            border-left-color: var(--act-pink);
+        }
+
+        @media (max-width: 1400px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .pdca-visual {
+                min-height: 600px;
+            }
+
+            .categories-container {
+                width: 100%;
+                max-width: 900px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ISO 45001:2018</h1>
+        <p>Occupational Health & Safety Management System</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Side - PDCA Visual -->
+        <div class="pdca-visual">
+            <!-- ISO Document -->
+            <div class="iso-document" id="isoDoc">
+                <div class="iso-corner"></div>
+                <h3>ISO</h3>
+                <div class="iso-number">45001</div>
+                <div class="iso-lines">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+
+            <!-- Background Diamond (Context) -->
+            <div class="background-diamond" id="backgroundDiamond"></div>
+
+            <!-- PDCA Circle -->
+            <div class="pdca-circle">
+                <div class="pdca-box plan-box" id="planBox" onclick="window.location.href='https://globalvale.sharepoint.com/teams/bm-inst/SitePages/Global/HSER-Plan.aspx'">PLAN</div>
+                <div class="pdca-box do-box" id="doBox" onclick="window.location.href='https://globalvale.sharepoint.com/teams/bm-inst/SitePages/Global/HSER-Do.aspx'">DO</div>
+                <div class="pdca-box check-box" id="checkBox" onclick="window.location.href='https://globalvale.sharepoint.com/teams/bm-inst/SitePages/Global/HSER-Check.aspx'">CHECK</div>
+                <div class="pdca-box act-box" id="actBox" onclick="window.location.href='https://globalvale.sharepoint.com/teams/bm-inst/SitePages/Global/HSER-Act.aspx'">ACT</div>
+
+                <!-- Arrows -->
+                <div class="arrow arrow-1" id="arrow1">
+                    <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 30 L50 30 L40 20 M50 30 L40 40" stroke="#34495e" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="arrow arrow-2" id="arrow2">
+                    <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 30 L50 30 L40 20 M50 30 L40 40" stroke="#34495e" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="arrow arrow-3" id="arrow3">
+                    <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 30 L50 30 L40 20 M50 30 L40 40" stroke="#34495e" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="arrow arrow-4" id="arrow4">
+                    <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 30 L50 30 L40 20 M50 30 L40 40" stroke="#34495e" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Categories -->
+        <div class="categories-container">
+            <div class="category-box" data-category="context" data-pdca="context">
+                <div class="category-title">4. Framework</div>
+                <div class="category-subtitle">Issues, needs and expectations of stakeholders</div>
+                <div class="category-details">
+                    <ul>
+                        <li>4.1 Understanding the organization and its context</li>
+                        <li>4.2 Needs and expectations of workers and other interested parties</li>
+                        <li>4.3 Determining the scope of the Management System</li>
+                        <li>4.4 Management System</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="category-box" data-category="leadership" data-pdca="context">
+                <div class="category-title">5. Leadership</div>
+                <div class="category-subtitle">Top management commitment, defined roles and worker involvement</div>
+                <div class="category-details">
+                    <ul>
+                        <li>5.1 Leadership & Commitment</li>
+                        <li>5.2 Policy</li>
+                        <li>5.3 Roles & Responsibilities</li>
+                        <li>5.4 Consultation with Workers</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="category-box" data-category="planning" data-pdca="plan">
+                <div class="category-title">6. Planning</div>
+                <div class="category-subtitle">Identifying and assessing risks and opportunities and setting objectives</div>
+                <div class="category-details">
+                    <ul>
+                        <li>6.1 Actions to address risks and opportunities</li>
+                        <li class="sub-item">6.1.2.1 Hazard Aspect Identification</li>
+                        <li class="sub-item">6.1.2.2 Assessment of Risks & Opportunities</li>
+                        <li class="sub-item">6.1.3 Legal & Other Requirements</li>
+                        <li>6.2 Objectives & Planning to Achieve Them</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="category-box" data-category="support" data-pdca="do">
+                <div class="category-title">7. Support</div>
+                <div class="category-subtitle">Resources, abilities and activities to enable the OHSMS</div>
+                <div class="category-details">
+                    <ul>
+                        <li>7.1 Resources</li>
+                        <li>7.2 Competence</li>
+                        <li>7.3 Awareness</li>
+                        <li>7.4 Communication (internal and external)</li>
+                        <li>7.5 Documented Information</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="category-box" data-category="operation" data-pdca="do">
+                <div class="category-title">8. Operation</div>
+                <div class="category-subtitle">Controls, managing change and preparing for unplanned events</div>
+                <div class="category-details">
+                    <ul>
+                        <li>8.1 Operational planning and control</li>
+                        <li class="sub-item">8.1.2 Eliminating Hazards & Risks</li>
+                        <li class="sub-item">8.1.3 Management of Change</li>
+                        <li class="sub-item">8.1.4 Procurement / Contractor Management</li>
+                        <li>8.2 Emergency Preparedness & Response</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="category-box" data-category="performance" data-pdca="check">
+                <div class="category-title">9. Performance Evaluation</div>
+                <div class="category-subtitle">Monitoring performance and checking compliance</div>
+                <div class="category-details">
+                    <ul>
+                        <li>9.1 Monitoring, Measuring, Analysis and Evaluation of Compliance</li>
+                        <li>9.2 Internal Audit</li>
+                        <li>9.3 Management Review</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="category-box" data-category="improvement" data-pdca="act">
+                <div class="category-title">10. Continuous Improvement</div>
+                <div class="category-subtitle">Taking corrective and preventative action and continually improving</div>
+                <div class="category-details">
+                    <ul>
+                        <li>10.2 Incident, Nonconformity & Corrective Action</li>
+                        <li>10.3 Continual Improvement</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categoryBoxes = document.querySelectorAll('.category-box');
+        
+        // PDCA elements
+        const backgroundDiamond = document.getElementById('backgroundDiamond');
+        const planBox = document.getElementById('planBox');
+        const doBox = document.getElementById('doBox');
+        const checkBox = document.getElementById('checkBox');
+        const actBox = document.getElementById('actBox');
+        const isoDoc = document.getElementById('isoDoc');
+        const arrows = document.querySelectorAll('.arrow');
+
+        const allVisualElements = [backgroundDiamond, planBox, doBox, checkBox, actBox, isoDoc, ...arrows];
+
+        categoryBoxes.forEach(box => {
+            box.addEventListener('mouseenter', function() {
+                const pdcaType = this.getAttribute('data-pdca');
+                highlightPDCA(pdcaType);
+            });
+
+            box.addEventListener('mouseleave', function() {
+                resetPDCA();
+            });
+
+            box.addEventListener('click', function() {
+                const category = this.getAttribute('data-category');
+                if (category === 'planning') {
+                    window.location.href = 'https://globalvale.sharepoint.com/teams/bm-inst/SitePages/Global/HSER-Plan.aspx';
+                } else if (category === 'support' || category === 'operation') {
+                    window.location.href = 'https://globalvale.sharepoint.com/teams/bm-inst/SitePages/Global/HSER-Do.aspx';
+                } else if (category === 'performance') {
+                    window.location.href = 'https://globalvale.sharepoint.com/teams/bm-inst/SitePages/Global/HSER-Check.aspx';
+                } else if (category === 'improvement') {
+                    window.location.href = 'https://globalvale.sharepoint.com/teams/bm-inst/SitePages/Global/HSER-Act.aspx';
+                }
+            });
+        });
+
+        function highlightPDCA(type) {
+            // Reset all
+            allVisualElements.forEach(el => el.classList.remove('highlighted', 'dimmed'));
+
+            if (type === 'context') {
+                // Highlight background diamond and ISO doc
+                backgroundDiamond.classList.add('highlighted');
+                isoDoc.classList.add('highlighted');
+                
+                // Dim PDCA boxes and arrows
+                planBox.classList.add('dimmed');
+                doBox.classList.add('dimmed');
+                checkBox.classList.add('dimmed');
+                actBox.classList.add('dimmed');
+                arrows.forEach(arrow => arrow.classList.add('dimmed'));
+            } else if (type === 'plan') {
+                planBox.classList.add('highlighted');
+                
+                // Dim others
+                backgroundDiamond.classList.add('dimmed');
+                isoDoc.classList.add('dimmed');
+                doBox.classList.add('dimmed');
+                checkBox.classList.add('dimmed');
+                actBox.classList.add('dimmed');
+                arrows.forEach(arrow => arrow.classList.add('dimmed'));
+            } else if (type === 'do') {
+                doBox.classList.add('highlighted');
+                
+                // Dim others
+                backgroundDiamond.classList.add('dimmed');
+                isoDoc.classList.add('dimmed');
+                planBox.classList.add('dimmed');
+                checkBox.classList.add('dimmed');
+                actBox.classList.add('dimmed');
+                arrows.forEach(arrow => arrow.classList.add('dimmed'));
+            } else if (type === 'check') {
+                checkBox.classList.add('highlighted');
+                
+                // Dim others
+                backgroundDiamond.classList.add('dimmed');
+                isoDoc.classList.add('dimmed');
+                planBox.classList.add('dimmed');
+                doBox.classList.add('dimmed');
+                actBox.classList.add('dimmed');
+                arrows.forEach(arrow => arrow.classList.add('dimmed'));
+            } else if (type === 'act') {
+                actBox.classList.add('highlighted');
+                
+                // Dim others
+                backgroundDiamond.classList.add('dimmed');
+                isoDoc.classList.add('dimmed');
+                planBox.classList.add('dimmed');
+                doBox.classList.add('dimmed');
+                checkBox.classList.add('dimmed');
+                arrows.forEach(arrow => arrow.classList.add('dimmed'));
+            }
+        }
+
+        function resetPDCA() {
+            allVisualElements.forEach(el => el.classList.remove('highlighted', 'dimmed'));
+        }
+    </script>
+</body>
+</html>
